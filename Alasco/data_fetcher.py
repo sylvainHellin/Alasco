@@ -44,7 +44,7 @@ class DataFetcher:
 			if self.verbose:
 				print("\n\n")
 				print("-"*50)
-				print(f"API call to url: {url}")
+				print(f"API call to url: {url[:100]}")
 				print("\n\n")
 				# printJSON(response_json)
 
@@ -147,7 +147,7 @@ class DataFetcher:
 		if property_ids is not None:
 			filters = ("id", "in", property_ids)
 			if self.verbose:
-				print(f"Fetching properties data for property_ids: {property_ids[:10]} ...")
+				print(f"Fetching properties data for property_ids: {property_ids[:3]} ...")
 		elif property_name is not None:
 			filters = ("name", "contains", property_name)
 			if self.verbose:
@@ -191,7 +191,7 @@ class DataFetcher:
 		if contractor_ids is not None:
 			filters = ("id", "in", contractor_ids)
 			if self.verbose:
-				print(f"Fetching contractors with ids in: {contractor_ids[:10]} ...")
+				print(f"Fetching contractors with ids in: {contractor_ids[:3]} ...")
 				print("-"*50)
 			if len(contractor_ids) > 50:
 				df_contractors = self.get_df(url=self.URL_CONTRACTORS, filters=filters)
@@ -252,15 +252,15 @@ class DataFetcher:
 		elif contract_ids is not None:
 			filters = ("id", "in", contract_ids)
 			if self.verbose:
-				print(f"Fetching contracts with ids in: {contract_ids}")
+				print(f"Fetching contracts with ids in: {contract_ids[:3]} ...")
 		elif contractor_ids is not None:
 			filters = ("contractor", "in", contractor_ids)
 			if self.verbose:
-				print(f"Fetching contracts with contractor ids in: {contractor_ids}")
+				print(f"Fetching contracts with contractor ids in: {contractor_ids[:3]} ...")
 		elif contract_unit_ids is not None:
 			filters = ("contract_unit", "in", contract_unit_ids)
 			if self.verbose:
-				print(f"Fetching contracts with contract unit ids in: {contract_unit_ids}")
+				print(f"Fetching contracts with contract unit ids in: {contract_unit_ids[:3]} ...")
 		else:
 			filters = None
 			if self.verbose:
@@ -307,11 +307,11 @@ class DataFetcher:
 		if contract_unit_ids is not None:
 			filters = ("id", "in", contract_unit_ids)
 			if self.verbose:
-				print(f"Fetching contract units with ids in: {contract_unit_ids[:10]}...")
+				print(f"Fetching contract units with ids in: {contract_unit_ids[:3]}...")
 		elif project_ids is not None:
 			filters = ("project", "in", project_ids)
 			if self.verbose:
-				print(f"Fetching contract units with project ids in: {project_ids[:10]} ...")
+				print(f"Fetching contract units with project ids in: {project_ids[:3]} ...")
 		else:
 			filters = None
 			if self.verbose:
@@ -336,11 +336,11 @@ class DataFetcher:
 		if invoice_ids is not None:
 			filters = ("id", "in", invoice_ids)
 			if self.verbose:
-				print(f"Fetching invoices with ids in: {invoice_ids}")
+				print(f"Fetching invoices with ids in: {invoice_ids[:3]} ...")
 		elif contract_ids is not None:
 			filters = ("contract", "in", contract_ids)
 			if self.verbose:
-				print(f"Fetching invoices with contract ids in: {contract_ids}")
+				print(f"Fetching invoices with contract ids in: {contract_ids[:3]} ...")
 		else:
 			filters = None
 			if self.verbose:
@@ -367,11 +367,11 @@ class DataFetcher:
 		"""
 		if change_order_ids is not None:
 			if self.verbose:
-				print(f"Fetching change orders with ids in: {change_order_ids[:10]} ...")
+				print(f"Fetching change orders with ids in: {change_order_ids[:3]} ...")
 			filters = ("id", "in", change_order_ids)
 		elif contract_ids is not None:
 			if self.verbose:
-				print(f"Fetching change orders belonging to contract ids in: {contract_ids[:10]} ...")
+				print(f"Fetching change orders belonging to contract ids in: {contract_ids[:3]} ...")
 			filters = ("contract", "in", contract_ids)
 		else:
 			raise ValueError("Please provide either a list of change order ids or a list of contract ids.")
