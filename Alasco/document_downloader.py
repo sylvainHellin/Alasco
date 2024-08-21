@@ -2,12 +2,29 @@ import requests
 import os
 import pandas as pd
 import re
-from Alasco.data_fetcher import DataFetcher
+from alasco.data_fetcher import DataFetcher
 from datetime import date
 
 class DocumentDownloader:
+	"""
+	Initializes the DocumentDownloader class.
 
-	def __init__(self, header, verbose = False, download_path = None) -> None:
+	Args:
+		header (dict): The header containing API key and token for authentication.
+		verbose (bool, optional): If True, enables verbose mode. Defaults to False.
+		download_path (str | None, optional): The path where documents will be downloaded. 
+			If None, defaults to an empty string. If "standard", defaults to "outputs/{today's date}". Defaults to None.
+
+	Attributes:
+		header (dict): Stores the API key and token for authentication.
+		verbose (bool): Indicates if verbose mode is enabled.
+		BASE_URL (str): The base URL for the Alasco API.
+		data_fetcher (DataFetcher): An instance of DataFetcher to fetch data from the API.
+		today (date): The current date.
+		download_path (str): The path where documents will be downloaded.
+	"""
+
+	def __init__(self, header, verbose = False, download_path: str | None = None) -> None:
 		self.header = header
 		self.verbose = verbose
 		self.BASE_URL = "https://api.alasco.de/v1/"
@@ -15,7 +32,10 @@ class DocumentDownloader:
 		self.today = date.today()
 
 		if download_path is None:
+			download_path = ""
+		elif download_path == "standard":
 			download_path = f"outputs/{self.today}"
+			
 		self.download_path = download_path
 		
 		if not os.path.exists(self.download_path):
@@ -39,7 +59,21 @@ class DocumentDownloader:
 		url += f"invoices/{invoice_id}/documents/"
 		return url
 
-	def get_contract_documents(self, contract_ids:list):
+	def get_contract_documents(self, contract_ids: list) -> pd.DataFrame:
+		"""
+		Fetches and concatenates contract documents for the given contract IDs.
+
+		Args:
+			contract_ids (list): A list of contract IDs for which to fetch documents.
+
+		Returns:
+			pd.DataFrame: A DataFrame containing the concatenated contract documents.
+
+		Example:
+			>>> contract_ids = ["123", "456"]
+			>>> df_contract_documents = downloader.get_contract_documents(contract_ids)
+			>>> print(df_contract_documents)
+		"""
 		urls = [self._prepare_url_get_contract_documents(contract_id) for contract_id in contract_ids]
 		collection = []
 		for url in urls:
@@ -48,8 +82,23 @@ class DocumentDownloader:
 				collection.append(doc)
 		df_contract_documents = pd.concat(collection)
 		return df_contract_documents
-	
-	def get_change_order_documents(self, change_order_ids:list):
+		
+	def get_change_order_documents(self, change_order_ids: list) -> pd.DataFrame:
+		"""
+		Fetches and concatenates change order documents for the given change order IDs.
+
+		Args:
+			change_order_ids (list): A list of change order IDs for which to fetch documents.
+
+		Returns:
+			pd.DataFrame: A DataFrame containing the concatenated change order documents.
+
+		Example:
+			>>> change_order_ids = ["789", "101"]
+			>>> df_change_order_documents = downloader.get_change_order_documents(change_order_ids)
+			>>> print(df_change_order_documents)
+		"""
+			
 		urls = [self._prepare_url_get_change_order_documents(change_order_id) for change_order_id in change_order_ids]
 		collection = []
 		for url in urls:
@@ -59,7 +108,21 @@ class DocumentDownloader:
 		df_change_order_documents = pd.concat(collection)
 		return df_change_order_documents
 
-	def get_invoice_documents(self, invoice_ids:list):
+	def get_invoice_documents(self, invoice_ids: list) -> pd.DataFrame:
+		"""
+		Fetches and concatenates invoice documents for the given invoice IDs.
+
+		Args:
+			invoice_ids (list): A list of invoice IDs for which to fetch documents.
+
+		Returns:
+			pd.DataFrame: A DataFrame containing the concatenated invoice documents.
+
+		Example:
+			>>> invoice_ids = ["111", "222"]
+			>>> df_invoice_documents = downloader.get_invoice_documents(invoice_ids)
+			>>> print(df_invoice_documents)
+		"""
 		urls = [self._prepare_url_get_invoice_documents(invoice_id) for invoice_id in invoice_ids]
 		collection = []
 		for url in urls:
@@ -68,19 +131,39 @@ class DocumentDownloader:
 				collection.append(doc)
 		df_invoice_documents = pd.concat(collection)
 		return df_invoice_documents
-	
-	def download_documents(self, document_download_links:list, document_names:list, download_path:str|None=None):
+	def download_documents(self, document_download_links: list, document_names: list, download_path: str | None = None):
+		"""
+		Downloads documents from the provided download links and saves them with the given names.
 
+		Args:
+			document_download_links (list): A list of URLs from which to download documents.
+			document_names (list): A list of names to save the downloaded documents as.
+			download_path (str | None, optional): The path where documents will be downloaded. 
+				If None, uses the instance's download_path attribute. Defaults to None.
+
+		Raises:
+			IndexError: If the lengths of document_download_links and document_names do not match.
+
+		Example:
+			>>> document_download_links = ["https://example.com/doc1", "https://example.com/doc2"]
+			>>> document_names = ["doc1.pdf", "doc2.pdf"]
+			>>> downloader.download_documents(document_download_links, document_names)
+		"""
+
+		# Check if the lengths of the download links and names match
 		if len(document_download_links) != len(document_names):
 			raise IndexError("The lists of document names and document values should have the same length.")
 
+		# Use the provided download path or the instance's download path
 		if download_path is None:
 			download_path = self.download_path
 
+		# Create the download directory if it does not exist
 		if not os.path.exists(download_path):
 			os.makedirs(download_path)
 			print(f"Created directory: {download_path}")
 
+		# Download each document and save it with the corresponding name
 		for name, link in zip(document_names, document_download_links):
 			if self.verbose:
 				print(f"Downloading document from {name}")
@@ -94,7 +177,7 @@ class DocumentDownloader:
 					print(f"Document saved to {file_name}")
 			else:
 				print(f"Failed to download document from {link}. Status code: {response.status_code}")
-	
+
 	def _name_contract(self, row: pd.Series, document_type: str | None = None) -> str:
 		"""
 		Generates a standardized contract name based on the contractor name, contract number, and document type.

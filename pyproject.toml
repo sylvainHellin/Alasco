@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alasco"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
 	{ name="Sylvain Hellin", email="hellinsylvain@gmail.com" },
 ]
@@ -26,7 +26,7 @@ Homepage = "https://github.com/sylvainHellin/Alasco"
 Issues = "https://github.com/sylvainHellin/Alasco/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["Alasco"]
+packages = ["alasco"]
 
 [tool.hatch.build]
 exclude = ["__pycache__"]

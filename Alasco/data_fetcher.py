@@ -1,9 +1,31 @@
 import requests
 import pandas as pd
-from Alasco.data_transformer import DataTransformer
-from Alasco.utils import Utils
+from alasco.data_transformer import DataTransformer
+from alasco.utils import Utils
 
 class DataFetcher:
+	"""
+	The DataFetcher class is responsible for fetching data from the Alasco API.
+
+	Args:
+		header (dict): The header containing API key and token for authentication.
+		verbose (bool, optional): If True, enables verbose mode. Defaults to False.
+
+	Attributes:
+		URL_REPORTING (str): The URL for fetching reporting contract units.
+		URL_PROJECT (str): The URL for fetching projects.
+		URL_PROPERTIES (str): The URL for fetching properties.
+		URL_CONTRACTS (str): The URL for fetching contracts.
+		URL_CHANGE_ORDERS (str): The URL for fetching change orders.
+		URL_CONTRACTORS (str): The URL for fetching contractors.
+		URL_CONTRACTING_ENTITIES (str): The URL for fetching contracting entities.
+		URL_CONTRACT_UNITS (str): The URL for fetching contract units.
+		URL_INVOICES (str): The URL for fetching invoices.
+		header (dict): Stores the API key and token for authentication.
+		verbose (bool): Indicates if verbose mode is enabled.
+		transform (DataTransformer): An instance of DataTransformer to transform the fetched data.
+		utils (Utils): An instance of Utils for utility functions.
+	"""
 
 	def __init__(self, header, verbose = False) -> None:
 		self.URL_REPORTING = "https://api.alasco.de/v1/reporting/contract_units"
@@ -21,6 +43,20 @@ class DataFetcher:
 		self.utils = Utils()
 
 	def get_json(self, url, filters=[], verbose:bool = None):
+		"""
+		Fetches JSON data from the given URL with optional filters.
+
+		Args:
+			url (str): The URL to fetch data from.
+			filters (list, optional): A list containing attribute, operation, and filter value for filtering the data. Defaults to an empty list.
+			verbose (bool, optional): If provided, overrides the instance's verbose setting. Defaults to None.
+
+		Returns:
+			list: A list of JSON responses from the API.
+
+		Raises:
+			RuntimeError: If an HTTP error occurs during the API call.
+		"""
 		if verbose is not None:
 			self.verbose = verbose
 		if filters:

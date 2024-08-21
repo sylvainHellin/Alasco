@@ -1,5 +1,5 @@
 import pandas as pd
-from Alasco.utils import Utils
+from alasco.utils import Utils
 
 class DataTransformer:
 	"""
