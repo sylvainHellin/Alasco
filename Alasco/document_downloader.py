@@ -32,10 +32,10 @@ class DocumentDownloader:
 		self.today = date.today()
 
 		if download_path is None:
-			download_path = ""
+			download_path = "/"
 		elif download_path == "standard":
 			download_path = f"outputs/{self.today}"
-			
+
 		self.download_path = download_path
 		
 		if not os.path.exists(self.download_path):
