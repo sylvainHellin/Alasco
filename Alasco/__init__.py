@@ -6,10 +6,10 @@ Submodules document_uploader and data_updater are placeholders for now and will 
 
 
 Author: sylvain hellin
-Version: 0.0.4
+Version: 0.0.5
 """
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "sylvain hellin"
 
 # Import key classes or functions
