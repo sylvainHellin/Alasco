@@ -2,7 +2,7 @@
 
 ## Introduction  
 
-This package is SDK for `python` to facilitate interaction with the Alasco API.
+This package is an SDK for `python` to facilitate interaction with the Alasco API.
 
 The official documentation from [Alasco](https://www.alasco.com/) can be found [here](https://developer.alasco.de/).
 

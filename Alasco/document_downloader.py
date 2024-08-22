@@ -3,7 +3,9 @@ import os
 import pandas as pd
 import re
 from alasco.data_fetcher import DataFetcher
+from alasco.data_transformer import DataTransformer
 from datetime import date
+from typing import Dict, List
 
 class DocumentDownloader:
 	"""
@@ -29,6 +31,7 @@ class DocumentDownloader:
 		self.verbose = verbose
 		self.BASE_URL = "https://api.alasco.de/v1/"
 		self.data_fetcher = DataFetcher(header=header, verbose=verbose)
+		self.data_transformer = DataTransformer(verbose=verbose)
 		self.today = date.today()
 
 		if download_path is None:
@@ -74,6 +77,10 @@ class DocumentDownloader:
 			>>> df_contract_documents = downloader.get_contract_documents(contract_ids)
 			>>> print(df_contract_documents)
 		"""
+
+		if self.verbose:
+			print(f"Getting contract documents for {len(contract_ids)} documents with ids : {contract_ids[:3]} ...")
+
 		urls = [self._prepare_url_get_contract_documents(contract_id) for contract_id in contract_ids]
 		collection = []
 		for url in urls:
@@ -99,6 +106,8 @@ class DocumentDownloader:
 			>>> print(df_change_order_documents)
 		"""
 			
+		if self.verbose:
+			print(f"Getting change order documents for {len(change_order_ids)} documents with ids : {change_order_ids[:3]} ...")
 		urls = [self._prepare_url_get_change_order_documents(change_order_id) for change_order_id in change_order_ids]
 		collection = []
 		for url in urls:
@@ -123,6 +132,9 @@ class DocumentDownloader:
 			>>> df_invoice_documents = downloader.get_invoice_documents(invoice_ids)
 			>>> print(df_invoice_documents)
 		"""
+		if self.verbose:
+			print(f"Getting invoice documents for {len(invoice_ids)} documents with ids : {invoice_ids[:3]} ...")
+
 		urls = [self._prepare_url_get_invoice_documents(invoice_id) for invoice_id in invoice_ids]
 		collection = []
 		for url in urls:
@@ -260,6 +272,10 @@ class DocumentDownloader:
 			download_path = self.download_path + "/" + sub_folder
 		else:
 			download_path = self.download_path
+		
+		# If verbose mode is enabled, print a message indicating the start of the downloading process
+		if self.verbose:
+			print(f"Downloading contract documents for {len(contract_names)} documents with names : {contract_names[:3]} ...")
 			
 		# Download the documents using the extracted download links and generated contract names
 		self.download_documents(document_download_links=download_links, document_names=contract_names, download_path=download_path)
@@ -350,6 +366,10 @@ class DocumentDownloader:
 		else:
 			download_path = self.download_path
 
+		# If verbose mode is enabled, print a message indicating the start of the downloading process
+		if self.verbose:
+			print(f"Downloading invoice documents for {len(invoice_names)} documents with names : {invoice_names[:3]} ...")
+
 		# Download the documents using the extracted download links and generated invoice names
 		self.download_documents(document_download_links=download_links, document_names=invoice_names, download_path=download_path)
 
@@ -392,7 +412,7 @@ class DocumentDownloader:
 
 		return change_order_name
 
-	def download_change_orders(self, df: pd.DataFrame, document_type: str | None = "CHANGE-ORDER", sub_folder: str | None = "change_orders") -> None:
+	def download_change_orders(self, df: pd.DataFrame, document_type: str | None = "CHANGE_ORDER", sub_folder: str | None = "change_orders") -> None:
 		"""
 		Downloads change order documents based on the DataFrame, document type, and optional sub-folder. 
 		The name of the document is generated using the _name_change_order() method. 
@@ -419,9 +439,10 @@ class DocumentDownloader:
 			"relationships.change_order.data.id": "change_order_id",
 			"links.download": "download_link"
 		})
-		# Select relevant columns from the fetched contract links DataFrame
+		# Select relevant columns from the fetched change order links DataFrame
 		df_change_order_links = df_change_order_links[["change_order_document_id", "change_order_id", "download_link", "document_type", "filename"]]
-		# Merge the original DataFrame with the contract links DataFrame on 'change_order_id'
+
+		# Merge the original DataFrame with the change order links DataFrame on 'change_order_id'
 		df_merged = pd.merge(df, df_change_order_links, on="change_order_id", how="outer")
 
 		# Filter the merged DataFrame by the specified document type, if provided
@@ -431,15 +452,78 @@ class DocumentDownloader:
 		# Extract download links from the filtered DataFrame
 		download_links = df_merged["download_link"].tolist()
 
-		# Generate standardized contract names for each row in the original DataFrame
-		contract_names = df_merged.apply(lambda row: self._name_change_order(row=row, document_type=document_type), axis=1)
+		# Generate standardized change order names for each row in the original DataFrame
+		change_order_names = df_merged.apply(lambda row: self._name_change_order(row=row, document_type=document_type), axis=1)
 
 		if sub_folder is not None:
 			download_path = self.download_path + "/" + sub_folder
 		else:
 			download_path = self.download_path
 
-		# Download the documents using the extracted download links and generated contract names
-		self.download_documents(document_download_links=download_links, document_names=contract_names, download_path=download_path)
+		# If verbose mode is enabled, print a message indicating the start of the downloading process
+		if self.verbose:
+			print(f"Downloading change order documents for {len(change_order_names)} documents with names : {change_order_names[:3]} ...")
+
+		# Download the documents using the extracted download links and generated change order names
+		self.download_documents(document_download_links=download_links, document_names=change_order_names, download_path=download_path)
 
 		return None
+
+	def batch_download_documents(self, 
+							dfs: Dict[str, pd.DataFrame], 
+							property_name: str | None = None, 
+							project_names: List[str] | None = None, 
+							download_path: str | None = None
+							) -> None:
+		"""
+		Downloads all documents (contracts, change orders, invoices) for a given property or list of projects.
+
+		Args:
+			dfs (Dict[str, pd.DataFrame]): Dictionary of DataFrames containing the data.
+			property_name (str | None): The name of the property to filter projects. Defaults to None.
+			project_names (List[str] | None): List of project names to download documents for. Defaults to None.
+			download_path (str | None): The base path where documents will be downloaded. Defaults to None.
+
+		Raises:
+			ValueError: If neither property_name nor project_names are provided.
+		"""
+
+		if property_name is None and project_names is None:
+			raise ValueError("Please provide either a property name or a list of project names")
+
+		df_core = self.data_transformer.consolidate_core_DataFrames(dfs=dfs)
+		df_contracts = df_core.copy()
+		df_invoices = self.data_transformer.consolidate_invoices_DataFrame(df_core=df_core, df_invoices=dfs["invoices"])
+		df_change_orders = self.data_transformer.consolidate_change_orders_DataFrame(df_core=df_core, df_change_orders=dfs["change_orders"])
+
+		if project_names is None:
+			project_names = df_core[df_core["property_name"] == property_name]["project_name"].drop_duplicates().tolist()
+
+		core_path = self.download_path[:]
+		download_path = download_path if download_path is not None else self.download_path[:]
+
+		for project_name in project_names:
+
+			# Create subsets of the DataFrames for each project
+			subset_df_contracts = df_contracts[df_contracts["project_name"] == project_name].copy()
+			subset_df_invoices = df_invoices[df_invoices["project_name"] == project_name].copy()
+			subset_df_change_orders = df_change_orders[df_change_orders["project_name"] == project_name].copy()
+
+			# Set path for downloading documents for this project
+			project_download_path = os.path.join(download_path, project_name)
+			self.download_path = project_download_path
+
+			if self.verbose:
+				print(f"Downloading documents for project: {project_name}")
+
+			# Download documents
+			self.download_contracts(df=subset_df_contracts)
+			self.download_invoices(df=subset_df_invoices)
+			self.download_change_orders(df=subset_df_change_orders)
+
+		if self.verbose:
+			print("Batch download completed.")
+		
+		self.download_path = core_path
+
+		return
