@@ -507,11 +507,16 @@ class DataFetcher:
 		urls = [self.utils._prepare_url_get_contract_documents(contract_id) for contract_id in contract_ids]
 		collection = []
 		for url in urls:
-			doc = self.data_fetcher.get_df(url=url)
+			doc = self.get_df(url=url)
 			if not doc.empty:
 				collection.append(doc)
-		df_contract_documents = pd.concat(collection)
-		return df_contract_documents
+
+		# if no document is uploaded, will return an empty DataFrame		
+		if not collection:
+			return pd.DataFrame()
+		else:
+			df_contract_documents = pd.concat(collection)
+			return df_contract_documents
 		
 	def get_change_order_documents(self, change_order_ids: list) -> pd.DataFrame:
 		"""
@@ -534,11 +539,16 @@ class DataFetcher:
 		urls = [self.utils._prepare_url_get_change_order_documents(change_order_id) for change_order_id in change_order_ids]
 		collection = []
 		for url in urls:
-			doc = self.data_fetcher.get_df(url=url)
+			doc = self.get_df(url=url)
 			if not doc.empty:
 				collection.append(doc)
-		df_change_order_documents = pd.concat(collection)
-		return df_change_order_documents
+
+		# if no document is uploaded, will return an empty DataFrame		
+		if not collection:
+			return pd.DataFrame()
+		else:
+			df_change_order_documents = pd.concat(collection)
+			return df_change_order_documents
 
 	def get_invoice_documents(self, invoice_ids: list) -> pd.DataFrame:
 		"""
@@ -561,8 +571,13 @@ class DataFetcher:
 		urls = [self.utils._prepare_url_get_invoice_documents(invoice_id) for invoice_id in invoice_ids]
 		collection = []
 		for url in urls:
-			doc = self.data_fetcher.get_df(url=url)
+			doc = self.get_df(url=url)
 			if not doc.empty:
 				collection.append(doc)
-		df_invoice_documents = pd.concat(collection)
-		return df_invoice_documents
+		
+		# if no document is uploaded, will return an empty DataFrame		
+		if not collection:
+			return pd.DataFrame()
+		else:
+			df_invoice_documents = pd.concat(collection)
+			return df_invoice_documents

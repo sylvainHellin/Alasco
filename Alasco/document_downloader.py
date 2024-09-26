@@ -180,6 +180,9 @@ class DocumentDownloader:
 		else:
 			download_path = self.download_path
 		
+		# drop files with no link
+		df_merged = df_merged.dropna(subset=["download_link"])
+
 		# If verbose mode is enabled, print a message indicating the start of the downloading process
 		if self.verbose:
 			print(f"Downloading contract documents for {len(contract_names)} documents with names : {contract_names[:3]} ...")

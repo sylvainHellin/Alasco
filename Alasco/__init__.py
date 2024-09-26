@@ -7,13 +7,17 @@ Submodules document_uploader and data_updater are placeholders for now and will 
 Changelog zur Version 0.0.7:
 - moved get_documents methods to data_fetcher
 - moved _prepaer_urls methods to utils
+- add .drop_duplicates() after consolidating data in data_transformer
 - added upload_document methods 
 
+TODO:
+- N.A.
+
 Author: sylvain hellin
-Version: 0.0.7
+Version: 0.0.8
 """
 
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 __author__ = "sylvain hellin"
 
 # Import key classes or functions
