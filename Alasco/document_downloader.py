@@ -4,6 +4,7 @@ import pandas as pd
 import re
 from alasco.data_fetcher import DataFetcher
 from alasco.data_transformer import DataTransformer
+from alasco.utils import Utils
 from datetime import date
 from typing import Dict, List
 
@@ -32,6 +33,7 @@ class DocumentDownloader:
 		self.BASE_URL = "https://api.alasco.de/v1/"
 		self.data_fetcher = DataFetcher(header=header, verbose=verbose)
 		self.data_transformer = DataTransformer(verbose=verbose)
+		self.utils = Utils()
 		self.today = date.today()
 
 		if download_path is None:
@@ -47,102 +49,7 @@ class DocumentDownloader:
 		else:
 			print(f"{self.download_path} already exist")
 
-	def _prepare_url_get_contract_documents(self, contract_id:str):
-		url = self.BASE_URL
-		url += f"contracts/{contract_id}/documents/"
-		return url
 
-	def _prepare_url_get_change_order_documents(self, change_order_id:str):
-		url = self.BASE_URL
-		url += f"change_orders/{change_order_id}/documents/"
-		return url
-
-	def _prepare_url_get_invoice_documents(self, invoice_id:str):
-		url = self.BASE_URL
-		url += f"invoices/{invoice_id}/documents/"
-		return url
-
-	def get_contract_documents(self, contract_ids: list) -> pd.DataFrame:
-		"""
-		Fetches and concatenates contract documents for the given contract IDs.
-
-		Args:
-			contract_ids (list): A list of contract IDs for which to fetch documents.
-
-		Returns:
-			pd.DataFrame: A DataFrame containing the concatenated contract documents.
-
-		Example:
-			>>> contract_ids = ["123", "456"]
-			>>> df_contract_documents = downloader.get_contract_documents(contract_ids)
-			>>> print(df_contract_documents)
-		"""
-
-		if self.verbose:
-			print(f"Getting contract documents for {len(contract_ids)} documents with ids : {contract_ids[:3]} ...")
-
-		urls = [self._prepare_url_get_contract_documents(contract_id) for contract_id in contract_ids]
-		collection = []
-		for url in urls:
-			doc = self.data_fetcher.get_df(url=url)
-			if not doc.empty:
-				collection.append(doc)
-		df_contract_documents = pd.concat(collection)
-		return df_contract_documents
-		
-	def get_change_order_documents(self, change_order_ids: list) -> pd.DataFrame:
-		"""
-		Fetches and concatenates change order documents for the given change order IDs.
-
-		Args:
-			change_order_ids (list): A list of change order IDs for which to fetch documents.
-
-		Returns:
-			pd.DataFrame: A DataFrame containing the concatenated change order documents.
-
-		Example:
-			>>> change_order_ids = ["789", "101"]
-			>>> df_change_order_documents = downloader.get_change_order_documents(change_order_ids)
-			>>> print(df_change_order_documents)
-		"""
-			
-		if self.verbose:
-			print(f"Getting change order documents for {len(change_order_ids)} documents with ids : {change_order_ids[:3]} ...")
-		urls = [self._prepare_url_get_change_order_documents(change_order_id) for change_order_id in change_order_ids]
-		collection = []
-		for url in urls:
-			doc = self.data_fetcher.get_df(url=url)
-			if not doc.empty:
-				collection.append(doc)
-		df_change_order_documents = pd.concat(collection)
-		return df_change_order_documents
-
-	def get_invoice_documents(self, invoice_ids: list) -> pd.DataFrame:
-		"""
-		Fetches and concatenates invoice documents for the given invoice IDs.
-
-		Args:
-			invoice_ids (list): A list of invoice IDs for which to fetch documents.
-
-		Returns:
-			pd.DataFrame: A DataFrame containing the concatenated invoice documents.
-
-		Example:
-			>>> invoice_ids = ["111", "222"]
-			>>> df_invoice_documents = downloader.get_invoice_documents(invoice_ids)
-			>>> print(df_invoice_documents)
-		"""
-		if self.verbose:
-			print(f"Getting invoice documents for {len(invoice_ids)} documents with ids : {invoice_ids[:3]} ...")
-
-		urls = [self._prepare_url_get_invoice_documents(invoice_id) for invoice_id in invoice_ids]
-		collection = []
-		for url in urls:
-			doc = self.data_fetcher.get_df(url=url)
-			if not doc.empty:
-				collection.append(doc)
-		df_invoice_documents = pd.concat(collection)
-		return df_invoice_documents
 	def download_documents(self, document_download_links: list, document_names: list, download_path: str | None = None):
 		"""
 		Downloads documents from the provided download links and saves them with the given names.
@@ -243,7 +150,7 @@ class DocumentDownloader:
 		contract_ids = df["contract_id"].drop_duplicates().tolist()
 
 		# Fetch contract document links using the extracted contract IDs
-		df_contract_links = self.get_contract_documents(contract_ids=contract_ids)
+		df_contract_links = self.data_fetcher.get_contract_documents(contract_ids=contract_ids)
 
 		# Rename columns for clarity
 		df_contract_links = df_contract_links.rename(columns={
@@ -273,6 +180,9 @@ class DocumentDownloader:
 		else:
 			download_path = self.download_path
 		
+		# drop files with no link
+		df_merged = df_merged.dropna(subset=["download_link"])
+
 		# If verbose mode is enabled, print a message indicating the start of the downloading process
 		if self.verbose:
 			print(f"Downloading contract documents for {len(contract_names)} documents with names : {contract_names[:3]} ...")
@@ -337,7 +247,7 @@ class DocumentDownloader:
 		invoice_ids = df["invoice_id"].drop_duplicates().tolist()
 
 		# Fetch invoice document links using the extracted invoice IDs
-		df_invoice_links = self.get_invoice_documents(invoice_ids=invoice_ids)
+		df_invoice_links = self.data_fetcher.get_invoice_documents(invoice_ids=invoice_ids)
 
 		# Rename columns for clarity
 		df_invoice_links = df_invoice_links.rename(columns={
@@ -431,7 +341,7 @@ class DocumentDownloader:
 		change_order_ids = df["change_order_id"].drop_duplicates().tolist()
 
 		# Fetch change order document links using the extracted change order IDs
-		df_change_order_links = self.get_change_order_documents(change_order_ids=change_order_ids)
+		df_change_order_links = self.data_fetcher.get_change_order_documents(change_order_ids=change_order_ids)
 
 		# Rename columns for clarity
 		df_change_order_links = df_change_order_links.rename(columns={

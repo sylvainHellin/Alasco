@@ -164,6 +164,8 @@ class DataTransformer:
 		contractors_df = contractors_df.rename(columns={"id": "contractor_id", "name": "contractor_name"})
 		# Merge 'contractors' DataFrame with the main DataFrame on 'contractor_id'
 		df_core = pd.merge(df_core, contractors_df, on="contractor_id")
+		df_core = df_core.drop_duplicates()
+		df_core = df_core.reset_index(drop=True)
 
 		return df_core
 		
@@ -190,7 +192,9 @@ class DataTransformer:
 		df_invoices_copy = df_invoices[required_columns].copy()
 		df_invoices_copy = df_invoices_copy.rename(columns={"id": "invoice_id", "contract": "contract_id", "external_identifier": "invoice_number"})
 		df_merged = pd.merge(df_core, df_invoices_copy, on="contract_id")
-		
+		df_merged = df_merged.drop_duplicates()
+		df_merged = df_merged.reset_index(drop=True)
+
 		return df_merged
 
 	def consolidate_change_orders_DataFrame(self, df_core: pd.DataFrame, df_change_orders: pd.DataFrame) -> pd.DataFrame:
@@ -221,6 +225,8 @@ class DataTransformer:
 			"identifier": "change_order_identifier"
 			})
 		df_merged = pd.merge(df_core, df_change_orders_copy, on="contract_id")
+		df_merged = df_merged.drop_duplicates()
+		df_merged = df_merged.reset_index(drop=True)
 		
 		return df_merged
 

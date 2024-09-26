@@ -6,7 +6,7 @@ TODAY = date.today()
 
 class Utils:
 	def __init__(self) -> None:
-		pass
+		self.BASE_URL = "https://api.alasco.de/v1/"
 		
 	def printResponse(self, response):
 		responseJSON = response.json()
@@ -66,3 +66,17 @@ class Utils:
 		except KeyError:
 			raise KeyError("The key 'id' was not found in the DataFrame.")
 
+	def _prepare_url_get_contract_documents(self, contract_id:str):
+		url = self.BASE_URL
+		url += f"contracts/{contract_id}/documents/"
+		return url
+
+	def _prepare_url_get_change_order_documents(self, change_order_id:str):
+		url = self.BASE_URL
+		url += f"change_orders/{change_order_id}/documents/"
+		return url
+
+	def _prepare_url_get_invoice_documents(self, invoice_id:str):
+		url = self.BASE_URL
+		url += f"invoices/{invoice_id}/documents/"
+		return url

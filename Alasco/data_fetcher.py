@@ -42,7 +42,7 @@ class DataFetcher:
 		self.transform = DataTransformer()
 		self.utils = Utils()
 
-	def get_json(self, url, filters=[], verbose:bool = None):
+	def get_json(self, url: str, filters: list = [], verbose: bool = None) -> list | RuntimeError:
 		"""
 		Fetches JSON data from the given URL with optional filters.
 
@@ -57,43 +57,52 @@ class DataFetcher:
 		Raises:
 			RuntimeError: If an HTTP error occurs during the API call.
 		"""
+		# Override the instance's verbose setting if provided
 		if verbose is not None:
 			self.verbose = verbose
+
+		# Apply filters to the URL if provided
 		if filters:
 			attribute, operation, filter = filters
 			if isinstance(filter, list):
 				filter = ",".join(filter)
 			url = url + f"?filter[{attribute}.{operation}]={filter}"
+
 		try:
+			# Make the API request
 			response = requests.get(url=url, headers=self.header)
-			response.raise_for_status()  # Raise an HTTPError for bad responses
+			# Raise an HTTPError for bad responses
+			response.raise_for_status()
+			# Parse the JSON response
 			response_json = response.json()
 			list_responses_json = [response_json]
+
+			# Check for pagination and fetch additional pages if necessary
 			nextPageUrl = response_json.get("links", {}).get("next")
 			if nextPageUrl is not None:
 				nextPageUrl = response_json["links"]["next"]
-				nextPagesJSON = self.get_json(
-					url=nextPageUrl,
-				)
+				nextPagesJSON = self.get_json(url=nextPageUrl)
 				list_responses_json += nextPagesJSON
 
+			# Print verbose information if enabled
 			if self.verbose:
 				print("\n\n")
-				print("-"*50)
-				print(f"API call to url: {url[:100]}")
+				print("-" * 50)
+				print(f"API call to url: {url[:100]} ...")
 				print("\n\n")
-				# printJSON(response_json)
 
-			return list_responses_json	
+			return list_responses_json
 
 		except requests.exceptions.HTTPError as http_err:
+			# Handle HTTP errors
 			print(f"API call failed to url: {url}")
 			raise RuntimeError(f"HTTP error occurred: {http_err}")
 
 		except Exception as err:
+			# Handle other errors
 			print(f"API call failed to url: {url}")
 			raise RuntimeError(f"Other error occurred: {err}")
-	
+
 	def get_df(self, url, filters=None, chunk_size: int = 50):
 		"""
 		Fetches data from the API and converts it to a DataFrame.
@@ -475,3 +484,100 @@ class DataFetcher:
 		}
 
 		return dfs
+	
+	def get_contract_documents(self, contract_ids: list) -> pd.DataFrame:
+		"""
+		Fetches and concatenates contract documents for the given contract IDs.
+
+		Args:
+			contract_ids (list): A list of contract IDs for which to fetch documents.
+
+		Returns:
+			pd.DataFrame: A DataFrame containing the concatenated contract documents.
+
+		Example:
+			>>> contract_ids = ["123", "456"]
+			>>> df_contract_documents = downloader.get_contract_documents(contract_ids)
+			>>> print(df_contract_documents)
+		"""
+
+		if self.verbose:
+			print(f"Getting contract documents for {len(contract_ids)} documents with ids : {contract_ids[:3]} ...")
+
+		urls = [self.utils._prepare_url_get_contract_documents(contract_id) for contract_id in contract_ids]
+		collection = []
+		for url in urls:
+			doc = self.get_df(url=url)
+			if not doc.empty:
+				collection.append(doc)
+
+		# if no document is uploaded, will return an empty DataFrame		
+		if not collection:
+			return pd.DataFrame()
+		else:
+			df_contract_documents = pd.concat(collection)
+			return df_contract_documents
+		
+	def get_change_order_documents(self, change_order_ids: list) -> pd.DataFrame:
+		"""
+		Fetches and concatenates change order documents for the given change order IDs.
+
+		Args:
+			change_order_ids (list): A list of change order IDs for which to fetch documents.
+
+		Returns:
+			pd.DataFrame: A DataFrame containing the concatenated change order documents.
+
+		Example:
+			>>> change_order_ids = ["789", "101"]
+			>>> df_change_order_documents = downloader.get_change_order_documents(change_order_ids)
+			>>> print(df_change_order_documents)
+		"""
+			
+		if self.verbose:
+			print(f"Getting change order documents for {len(change_order_ids)} documents with ids : {change_order_ids[:3]} ...")
+		urls = [self.utils._prepare_url_get_change_order_documents(change_order_id) for change_order_id in change_order_ids]
+		collection = []
+		for url in urls:
+			doc = self.get_df(url=url)
+			if not doc.empty:
+				collection.append(doc)
+
+		# if no document is uploaded, will return an empty DataFrame		
+		if not collection:
+			return pd.DataFrame()
+		else:
+			df_change_order_documents = pd.concat(collection)
+			return df_change_order_documents
+
+	def get_invoice_documents(self, invoice_ids: list) -> pd.DataFrame:
+		"""
+		Fetches and concatenates invoice documents for the given invoice IDs.
+
+		Args:
+			invoice_ids (list): A list of invoice IDs for which to fetch documents.
+
+		Returns:
+			pd.DataFrame: A DataFrame containing the concatenated invoice documents.
+
+		Example:
+			>>> invoice_ids = ["111", "222"]
+			>>> df_invoice_documents = downloader.get_invoice_documents(invoice_ids)
+			>>> print(df_invoice_documents)
+		"""
+		if self.verbose:
+			print(f"Getting invoice documents for {len(invoice_ids)} documents with ids : {invoice_ids[:3]} ...")
+
+		urls = [self.utils._prepare_url_get_invoice_documents(invoice_id) for invoice_id in invoice_ids]
+		collection = []
+		for url in urls:
+			doc = self.get_df(url=url)
+			if not doc.empty:
+				collection.append(doc)
+		
+		# if no document is uploaded, will return an empty DataFrame		
+		if not collection:
+			return pd.DataFrame()
+		else:
+			df_invoice_documents = pd.concat(collection)
+			return df_invoice_documents
