@@ -18,7 +18,9 @@ classifiers = [
 ]
 dependencies = [
     "requests",
-    "pandas"
+    "pandas",
+    "python-dotenv>=1.1.0",
+    "pydantic>=2.11.4",
 ]
 
 [project.urls]
@@ -30,3 +32,9 @@ packages = ["alasco"]
 
 [tool.hatch.build]
 exclude = ["__pycache__"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["alasco"]
+
+[tool.hatch.build.sources]
+directory = "."
