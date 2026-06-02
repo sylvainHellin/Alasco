@@ -4,26 +4,32 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alasco"
-version = "0.0.9"
+version = "0.1.0"
 authors = [{ name = "Sylvain Hellin", email = "hellinsylvain@gmail.com" }]
-description = "A SDK to facilitate the interaction with the Alasco API."
+description = "Standalone httpx + pydantic-v2 SDK for the Alasco FinCon API (read + write)."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests",
-    "pandas",
-    "python-dotenv>=1.1.0",
-    "pydantic>=2.11.4",
+    "httpx>=0.28",
+    "pydantic>=2.10",
+    "loguru>=0.7",
+    "python-dotenv>=1.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/sylvainHellin/Alasco"
 Issues = "https://github.com/sylvainHellin/Alasco/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["alasco"]
@@ -34,5 +40,14 @@ exclude = ["__pycache__"]
 [tool.hatch.build.targets.sdist]
 packages = ["alasco"]
 
-[tool.hatch.build.sources]
-directory = "."
+[tool.pytest.ini_options]
+markers = [
+    "integration: live tests that hit the Alasco sandbox API (deselect with '-m \"not integration\"')",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]

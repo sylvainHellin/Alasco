@@ -1,8 +1,0 @@
-notebook
-ipykernel
-jupyter
-python-dotenv
-requests
-pandas
-openpyxl
-xlsxwriter
