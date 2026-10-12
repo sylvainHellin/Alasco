@@ -24,7 +24,7 @@ def create_contract_as_ordered(
     amount_net: str | None = None,
     amount_tax: str | None = None,
     currency: str = "EUR",
-    booking_account_number: int | None = None,
+    booking_account_number: str | int | None = None,
     contract_number: str | None = None,
     cost_center: str | None = None,
     date_contract: str | None = None,

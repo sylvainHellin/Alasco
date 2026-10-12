@@ -19,9 +19,9 @@ Key facts (verified):
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 # --- Enums (verified against openapi.json) ---
 
@@ -32,6 +32,34 @@ ContractDocumentType = Literal["ATTACHMENT", "CONTRACT"]
 RELATIONSHIP_TYPE_CONTRACT_UNIT = "CONTRACT_UNIT"
 RELATIONSHIP_TYPE_CONTRACTING_ENTITY = "CONTRACTING_ENTITY"
 RELATIONSHIP_TYPE_CONTRACTOR = "CONTRACTOR"
+
+
+# --- Booking account number wire format ---
+
+
+def booking_account_number_wire(value: str | int | None) -> str | int | None:
+    """Return ``booking_account_number`` in the shape the Alasco API accepts.
+
+    Alasco is moving this field from integer to string (letters and special
+    characters allowed, e.g. ``"A-1234"``); the switch date is not known yet.
+    Until then a digits-only value without a leading zero goes out as ``int``,
+    anything else as ``str`` so leading zeros and letters are never lost.
+    A blank string counts as unset.
+
+    This is the single place to flip to always-string (``return text``) once
+    Alasco confirms the switch date.
+    """
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if text.isascii() and text.isdigit() and not text.startswith("0"):
+        return int(text)
+    return text
+
+
+BookingAccountNumber = Annotated[str | int | None, AfterValidator(booking_account_number_wire)]
 
 
 # --- Shared building blocks ---
@@ -75,7 +103,7 @@ class CreateContractAttributes(BaseModel):
     name: str = Field(max_length=250)
     is_reverse_charge: bool
     amount: WriteAmount | None = None
-    booking_account_number: int | None = Field(default=None, ge=1, le=999999999)
+    booking_account_number: BookingAccountNumber = None
     contract_number: str | None = Field(default=None, max_length=250)
     cost_center: str | None = Field(default=None, max_length=100)
     date_contract: str | None = None
@@ -127,7 +155,7 @@ class UpdateContractAttributes(BaseModel):
     name: str | None = Field(default=None, max_length=250)
     status: ContractStatus | None = None
     amount: WriteAmount | None = None
-    booking_account_number: int | None = Field(default=None, ge=1, le=999999999)
+    booking_account_number: BookingAccountNumber = None
     contract_number: str | None = Field(default=None, max_length=250)
     cost_center: str | None = Field(default=None, max_length=100)
     date_contract: str | None = None

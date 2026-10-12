@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from alasco.models.base import MonetaryAmount
 
@@ -33,8 +33,16 @@ class ContractAttributes(BaseModel):
     date_contract: str | None = None
     date_created: str | None = None
     is_reverse_charge: bool = False
-    booking_account_number: int | None = None
+    booking_account_number: str | None = None
     cost_center: str | None = None
+
+    @field_validator("booking_account_number", mode="before")
+    @classmethod
+    def _booking_account_number_as_str(cls, value: Any) -> Any:
+        # Alasco is switching this field from integer to string; accept both.
+        if isinstance(value, int) and not isinstance(value, bool):
+            return str(value)
+        return value
 
 
 class Contract(BaseModel):
@@ -81,7 +89,7 @@ class Contract(BaseModel):
         amount_net: str | None = None,
         amount_tax: str | None = None,
         currency: str = "EUR",
-        booking_account_number: int | None = None,
+        booking_account_number: str | int | None = None,
         contract_number: str | None = None,
         cost_center: str | None = None,
         date_contract: str | None = None,
@@ -175,7 +183,7 @@ class Contract(BaseModel):
         amount_net: str | None = None,
         amount_tax: str | None = None,
         currency: str = "EUR",
-        booking_account_number: int | None = None,
+        booking_account_number: str | int | None = None,
         contract_number: str | None = None,
         cost_center: str | None = None,
         date_contract: str | None = None,

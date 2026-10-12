@@ -22,6 +22,7 @@ from alasco.models.write import (
     UpdateContractRelationships,
     UpdateContractRequest,
     WriteAmount,
+    booking_account_number_wire,
 )
 from tests.openapi_schema import get_schema, validate
 
@@ -174,6 +175,51 @@ def test_update_full_attributes_match_spec():
     ).to_api_dict()
     errors = validate(body, get_schema("UpdateContractRequest"))
     assert errors == [], errors
+
+
+# booking_account_number: Alasco moves it from integer to string. Until the
+# switch, digits-only values without a leading zero go out as int, else as str.
+BOOKING_ACCOUNT_CASES = [
+    (12345, 12345),
+    ("12345", 12345),
+    ("0042", "0042"),
+    ("A-1234", "A-1234"),
+]
+
+
+@pytest.mark.parametrize(("given", "wire"), BOOKING_ACCOUNT_CASES)
+def test_booking_account_number_wire_helper(given, wire):
+    out = booking_account_number_wire(given)
+    assert out == wire
+    assert type(out) is type(wire)
+
+
+@pytest.mark.parametrize("blank", [None, "", "   "])
+def test_booking_account_number_blank_is_unset(blank):
+    assert booking_account_number_wire(blank) is None
+    body = _create_request(attributes=dict(booking_account_number=blank)).to_api_dict()
+    assert "booking_account_number" not in body["data"]["attributes"]
+
+
+@pytest.mark.parametrize(("given", "wire"), BOOKING_ACCOUNT_CASES)
+def test_create_booking_account_number_wire_format(given, wire):
+    body = _create_request(attributes=dict(booking_account_number=given)).to_api_dict()
+    out = body["data"]["attributes"]["booking_account_number"]
+    assert out == wire
+    assert type(out) is type(wire)
+    if isinstance(wire, int):
+        # Integers still satisfy the current (integer-typed) openapi spec.
+        assert validate(body, get_schema("CreateContractRequestFincon")) == []
+
+
+@pytest.mark.parametrize(("given", "wire"), BOOKING_ACCOUNT_CASES)
+def test_update_booking_account_number_wire_format(given, wire):
+    body = _update_request(booking_account_number=given).to_api_dict()
+    out = body["data"]["attributes"]["booking_account_number"]
+    assert out == wire
+    assert type(out) is type(wire)
+    if isinstance(wire, int):
+        assert validate(body, get_schema("UpdateContractRequest")) == []
 
 
 def test_document_upload_type_enum():

@@ -159,6 +159,75 @@ def test_document_upload_rejects_bad_type():
         )
 
 
+# booking_account_number reads: the API sends an int today and a string after
+# Alasco's switch; both must parse, and leading zeros in strings must survive.
+@pytest.mark.parametrize(
+    ("raw", "parsed"),
+    [(12345, "12345"), ("12345", "12345"), ("0042", "0042"), ("A-1234", "A-1234"), (None, None)],
+)
+def test_contract_read_booking_account_number(raw, parsed):
+    contract = Contract.model_validate(
+        {
+            "id": CONTRACT_ID,
+            "type": "contract",
+            "attributes": {
+                "name": "n",
+                "contract_unit": UNIT_ID,
+                "booking_account_number": raw,
+            },
+        }
+    )
+    assert contract.attributes.booking_account_number == parsed
+
+
+def test_contract_list_tolerates_mixed_booking_account_formats():
+    values = [12345, "12345", "0042", "A-1234"]
+
+    class ListClient:
+        def get_all(self, endpoint: str, params: dict[str, Any] | None = None):
+            return [
+                {
+                    "id": f"c{i}",
+                    "type": "contract",
+                    "attributes": {
+                        "name": "n",
+                        "contract_unit": UNIT_ID,
+                        "booking_account_number": v,
+                    },
+                }
+                for i, v in enumerate(values)
+            ]
+
+    contracts = Contract.list(ListClient())
+    assert [c.attributes.booking_account_number for c in contracts] == [
+        "12345",
+        "12345",
+        "0042",
+        "A-1234",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("given", "wire"),
+    [(12345, 12345), ("12345", 12345), ("0042", "0042"), ("A-1234", "A-1234")],
+)
+def test_contract_create_and_update_send_booking_account_number(given, wire):
+    client = FakeClient()
+    Contract.create(
+        client,
+        name="x",
+        is_reverse_charge=False,
+        contract_unit_id=UNIT_ID,
+        contracting_entity_id=ENTITY_ID,
+        booking_account_number=given,
+    )
+    Contract.update(client, CONTRACT_ID, booking_account_number=given)
+    for call in client.calls:
+        out = call["json"]["data"]["attributes"]["booking_account_number"]
+        assert out == wire
+        assert type(out) is type(wire)
+
+
 def test_contractor_name_contains_uses_correct_filter():
     client = FakeClient()
     results = Contractor.name_contains(client, "394909")
