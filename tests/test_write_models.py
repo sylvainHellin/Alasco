@@ -67,9 +67,7 @@ def test_create_full_matches_spec():
             date_contract="2024-05-19",
             description="full contract",
         ),
-        contractor=RelationshipData(
-            data=RelationshipRef(id=CONTRACTOR_ID, type="CONTRACTOR")
-        ),
+        contractor=RelationshipData(data=RelationshipRef(id=CONTRACTOR_ID, type="CONTRACTOR")),
     )
     body = req.to_api_dict()
     errors = validate(body, get_schema("CreateContractRequestFincon"))
@@ -78,9 +76,7 @@ def test_create_full_matches_spec():
 
 def test_create_amount_uses_net_and_tax_strings_not_gross():
     body = _create_request(
-        attributes=dict(
-            amount=WriteAmount(currency="EUR", net="1000.00", tax="190.00")
-        )
+        attributes=dict(amount=WriteAmount(currency="EUR", net="1000.00", tax="190.00"))
     ).to_api_dict()
     amount = body["data"]["attributes"]["amount"]
     assert set(amount.keys()) == {"currency", "net", "tax"}
@@ -139,9 +135,7 @@ def test_update_relationships_only_entity_and_contractor():
             contracting_entity=RelationshipData(
                 data=RelationshipRef(id=ENTITY_ID, type="CONTRACTING_ENTITY")
             ),
-            contractor=RelationshipData(
-                data=RelationshipRef(id=CONTRACTOR_ID, type="CONTRACTOR")
-            ),
+            contractor=RelationshipData(data=RelationshipRef(id=CONTRACTOR_ID, type="CONTRACTOR")),
         )
     ).to_api_dict()
     errors = validate(body, get_schema("UpdateContractRequest"))
@@ -155,9 +149,7 @@ def test_update_relationships_cannot_set_contract_unit():
     # The update relationships model forbids contract_unit entirely.
     with pytest.raises(ValidationError):
         UpdateContractRelationships(
-            contract_unit=RelationshipData(
-                data=RelationshipRef(id=UNIT_ID, type="CONTRACT_UNIT")
-            )
+            contract_unit=RelationshipData(data=RelationshipRef(id=UNIT_ID, type="CONTRACT_UNIT"))
         )
 
 
@@ -182,9 +174,7 @@ def test_document_upload_type_enum():
     body = {"document_type": "CONTRACT"}
     errors = validate(
         body,
-        get_schema(
-            "Body_create_contract_document_contracts__contract_id__documents__post"
-        ),
+        get_schema("Body_create_contract_document_contracts__contract_id__documents__post"),
     )
     # 'upload' (binary) is supplied as the file part, not the metadata body; the
     # schema marks it required, so validating metadata-only is expected to flag it.

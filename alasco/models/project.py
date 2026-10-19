@@ -61,9 +61,7 @@ class Project(BaseModel):
         return cls.model_validate(data)
 
     @classmethod
-    def list(
-        cls, client: AlascoClient, property_ids: list[str] | None = None
-    ) -> list[Project]:
+    def list(cls, client: AlascoClient, property_ids: list[str] | None = None) -> list[Project]:
         """List projects, optionally filtered by property IDs."""
         params = {}
         if property_ids:

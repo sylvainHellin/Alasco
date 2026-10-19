@@ -55,9 +55,7 @@ class Contractor(BaseModel):
         return [cls.model_validate(item) for item in data]
 
     @classmethod
-    def list(
-        cls, client: AlascoClient, ids: list[str] | None = None
-    ) -> list[Contractor]:
+    def list(cls, client: AlascoClient, ids: list[str] | None = None) -> list[Contractor]:
         """List contractors, optionally filtered by IDs.
 
         Note: When filtering by many IDs, requests are batched

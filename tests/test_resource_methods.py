@@ -35,8 +35,10 @@ class FakeClient:
             "data": {
                 "id": CONTRACT_ID,
                 "type": "contract",
-                "attributes": {"name": json["data"]["attributes"]["name"],
-                               "contract_unit": UNIT_ID},
+                "attributes": {
+                    "name": json["data"]["attributes"]["name"],
+                    "contract_unit": UNIT_ID,
+                },
             }
         }
 
@@ -46,17 +48,18 @@ class FakeClient:
             "data": {
                 "id": CONTRACT_ID,
                 "type": "contract",
-                "attributes": {"name": "n", "contract_unit": UNIT_ID,
-                               "status": json["data"]["attributes"].get("status")},
+                "attributes": {
+                    "name": "n",
+                    "contract_unit": UNIT_ID,
+                    "status": json["data"]["attributes"].get("status"),
+                },
             }
         }
 
     def post_multipart(
         self, endpoint: str, data: dict[str, Any] | None = None, files: Any = None
     ) -> dict[str, Any]:
-        self.calls.append(
-            {"verb": "multipart", "endpoint": endpoint, "data": data, "files": files}
-        )
+        self.calls.append({"verb": "multipart", "endpoint": endpoint, "data": data, "files": files})
         return {
             "data": {
                 "id": "doc-1",
@@ -72,8 +75,11 @@ class FakeClient:
     def get_all(self, endpoint: str, params: dict[str, Any] | None = None):
         self.calls.append({"verb": "get_all", "endpoint": endpoint, "params": params})
         return [
-            {"id": CONTRACTOR_ID, "type": "contractor",
-             "attributes": {"name": "Bauer GmbH (394909)"}},
+            {
+                "id": CONTRACTOR_ID,
+                "type": "contractor",
+                "attributes": {"name": "Bauer GmbH (394909)"},
+            },
         ]
 
 

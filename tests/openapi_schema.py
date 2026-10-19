@@ -13,9 +13,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-OPENAPI_PATH = (
-    Path(__file__).resolve().parent.parent / "alasco" / "openapi" / "openapi.json"
-)
+OPENAPI_PATH = Path(__file__).resolve().parent.parent / "alasco" / "openapi" / "openapi.json"
 
 
 @lru_cache(maxsize=1)
