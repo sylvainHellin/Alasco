@@ -1,4 +1,10 @@
-"""HTTP client for Alasco FinCon API."""
+"""HTTP clients for the Alasco FinCon and CapEx APIs.
+
+Both APIs share authentication (``X-API-TOKEN`` + ``X-API-KEY``), JSON:API
+responses and ``links.next`` pagination; they differ only in the base path.
+``AlascoClient`` targets FinCon (``/v1``), ``CapexClient`` targets CapEx
+(``/capex/v1``).
+"""
 
 from typing import Any
 
@@ -22,18 +28,21 @@ class AlascoClient:
         self,
         token: str,
         key: str,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: str | None = None,
         timeout: float = DEFAULT_TIMEOUT,
+        transport: httpx.BaseTransport | None = None,
     ):
         """Initialize the Alasco client.
 
         Args:
             token: API token (X-API-TOKEN header)
             key: API key (X-API-KEY header)
-            base_url: Base URL for the API (default: https://api.alasco.de/v1)
+            base_url: Base URL for the API (default: the class's DEFAULT_BASE_URL,
+                https://api.alasco.de/v1 for FinCon)
             timeout: Request timeout in seconds (default: 30)
+            transport: Optional httpx transport (e.g. ``httpx.MockTransport`` in tests)
         """
-        self.base_url = base_url.rstrip("/")
+        self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip("/")
         self.timeout = timeout
         self._client = httpx.Client(
             headers={
@@ -42,6 +51,7 @@ class AlascoClient:
                 "Accept": "application/json",
             },
             timeout=timeout,
+            transport=transport,
         )
 
     def __enter__(self) -> "AlascoClient":
@@ -241,3 +251,18 @@ class AlascoClient:
         response = self._client.post(url, data=data, files=files)
         response.raise_for_status()
         return response.json()
+
+
+class CapexClient(AlascoClient):
+    """HTTP client for the Alasco CapEx API (``https://api.alasco.de/capex/v1``).
+
+    Same authentication, JSON:API handling and pagination as ``AlascoClient``;
+    only the default base URL differs. The CapEx models in
+    ``alasco.models.capex`` take a ``CapexClient`` so a type checker flags a
+    FinCon client passed by mistake.
+    """
+
+    DEFAULT_BASE_URL = "https://api.alasco.de/capex/v1"
+
+    def __enter__(self) -> "CapexClient":
+        return self
