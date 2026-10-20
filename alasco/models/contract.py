@@ -237,9 +237,7 @@ class Contract(BaseModel):
                 ),
                 contractor=(
                     RelationshipData(
-                        data=RelationshipRef(
-                            id=contractor_id, type=RELATIONSHIP_TYPE_CONTRACTOR
-                        )
+                        data=RelationshipRef(id=contractor_id, type=RELATIONSHIP_TYPE_CONTRACTOR)
                     )
                     if contractor_id is not None
                     else None
@@ -263,9 +261,7 @@ class Contract(BaseModel):
             )
         )
 
-        response = client.patch(
-            f"/contracts/{contract_id}/", json=request.to_api_dict()
-        )
+        response = client.patch(f"/contracts/{contract_id}/", json=request.to_api_dict())
         return cls.model_validate(response.get("data", {}))
 
     def get_invoices(self, client: AlascoClient) -> list[Invoice]:

@@ -46,9 +46,7 @@ class ContractUnit(BaseModel):
         return cls.model_validate(data)
 
     @classmethod
-    def list(
-        cls, client: AlascoClient, project_ids: list[str] | None = None
-    ) -> list[ContractUnit]:
+    def list(cls, client: AlascoClient, project_ids: list[str] | None = None) -> list[ContractUnit]:
         """List contract units, optionally filtered by project IDs."""
         params = {}
         if project_ids:

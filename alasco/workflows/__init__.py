@@ -6,6 +6,7 @@ logic: it is reusable orchestration that applications may use or replace with
 their own.
 """
 
+from alasco.workflows.capex import create_capex_contract_as_ordered
 from alasco.workflows.contracts import create_contract_as_ordered
 from alasco.workflows.runner import BatchResult, ItemResult, batch
 
@@ -13,5 +14,6 @@ __all__ = [
     "BatchResult",
     "ItemResult",
     "batch",
+    "create_capex_contract_as_ordered",
     "create_contract_as_ordered",
 ]

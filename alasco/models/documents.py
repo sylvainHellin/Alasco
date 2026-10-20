@@ -67,9 +67,7 @@ class ContractDocument(BaseModel):
         return client.download(self.links.download)
 
     @classmethod
-    def list(
-        cls, client: AlascoClient, contract_id: str
-    ) -> list[ContractDocument]:
+    def list(cls, client: AlascoClient, contract_id: str) -> list[ContractDocument]:
         """List documents for a contract."""
         data = client.get_all(f"/contracts/{contract_id}/documents/")
         return [cls.model_validate(item) for item in data]
@@ -180,13 +178,9 @@ class ChangeOrderDocument(BaseModel):
         return client.download(self.links.download_annotated)
 
     @classmethod
-    def list(
-        cls, client: AlascoClient, change_order_id: str
-    ) -> list[ChangeOrderDocument]:
+    def list(cls, client: AlascoClient, change_order_id: str) -> list[ChangeOrderDocument]:
         """List documents for a change order."""
-        data = client.get_all(
-            f"/change_orders/{change_order_id}/documents/"
-        )
+        data = client.get_all(f"/change_orders/{change_order_id}/documents/")
         return [cls.model_validate(item) for item in data]
 
 
@@ -244,9 +238,7 @@ class InvoiceDocument(BaseModel):
         return client.download(self.links.download_annotated)
 
     @classmethod
-    def list(
-        cls, client: AlascoClient, invoice_id: str
-    ) -> list[InvoiceDocument]:
+    def list(cls, client: AlascoClient, invoice_id: str) -> list[InvoiceDocument]:
         """List documents for an invoice."""
         data = client.get_all(f"/invoices/{invoice_id}/documents/")
         return [cls.model_validate(item) for item in data]
