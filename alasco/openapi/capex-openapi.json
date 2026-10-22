@@ -2730,9 +2730,7 @@
      "booking_account_number": {
       "anyOf": [
        {
-        "maximum": 999999999,
-        "minimum": 1,
-        "type": "integer"
+        "type": "string"
        },
        {
         "type": "null"
@@ -5554,9 +5552,7 @@
      "booking_account_number": {
       "anyOf": [
        {
-        "maximum": 999999999,
-        "minimum": 1,
-        "type": "integer"
+        "type": "string"
        },
        {
         "type": "null"
@@ -5734,9 +5730,7 @@
      "booking_account_number": {
       "anyOf": [
        {
-        "maximum": 999999999,
-        "minimum": 1,
-        "type": "integer"
+        "type": "string"
        },
        {
         "type": "null"
@@ -6541,9 +6535,7 @@
      "booking_account_number": {
       "anyOf": [
        {
-        "maximum": 999999999,
-        "minimum": 1,
-        "type": "integer"
+        "type": "string"
        },
        {
         "type": "null"

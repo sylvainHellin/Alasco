@@ -7281,9 +7281,7 @@
             "anyOf": [
               {
                 "description": "Booking account number",
-                "maximum": 999999999,
-                "minimum": 1,
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -13231,9 +13229,7 @@
             "anyOf": [
               {
                 "description": "Booking account number",
-                "maximum": 999999999,
-                "minimum": 1,
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -13405,9 +13401,7 @@
             "anyOf": [
               {
                 "description": "Booking account number",
-                "maximum": 999999999,
-                "minimum": 1,
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -15132,9 +15126,7 @@
             "anyOf": [
               {
                 "description": "Booking account number",
-                "maximum": 999999999,
-                "minimum": 1,
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"

@@ -19,9 +19,9 @@ Key facts (verified):
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field
 
 # --- Enums (verified against openapi.json) ---
 
@@ -37,29 +37,35 @@ RELATIONSHIP_TYPE_CONTRACTOR = "CONTRACTOR"
 # --- Booking account number wire format ---
 
 
-def booking_account_number_wire(value: str | int | None) -> str | int | None:
+def booking_account_number_wire(value: str | int | None) -> str | None:
     """Return ``booking_account_number`` in the shape the Alasco API accepts.
 
-    Alasco is moving this field from integer to string (letters and special
-    characters allowed, e.g. ``"A-1234"``); the switch date is not known yet.
-    Until then a digits-only value without a leading zero goes out as ``int``,
-    anything else as ``str`` so leading zeros and letters are never lost.
-    A blank string counts as unset.
-
-    This is the single place to flip to always-string (``return text``) once
-    Alasco confirms the switch date.
+    Alasco switched this field from integer to string in October 2026 (letters
+    and special characters allowed, e.g. ``"A-1234"``): reads return a string
+    since 22.10.2026, and writes will reject integers soon after. Strings were
+    accepted before the switch too, so the value always goes out as ``str``,
+    numeric ones included, and leading zeros are kept. A blank string counts as
+    unset.
     """
     if value is None:
         return None
     text = str(value).strip()
     if not text:
         return None
-    if text.isascii() and text.isdigit() and not text.startswith("0"):
-        return int(text)
     return text
 
 
+def _booking_account_number_read(value: Any) -> Any:
+    # Responses carried an int before Alasco's switch and a string after it.
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
+    return value
+
+
+# Write side: callers may pass an int or a str; it always goes out as a str.
 BookingAccountNumber = Annotated[str | int | None, AfterValidator(booking_account_number_wire)]
+# Read side: accepts an int or a str from the API and always yields a str.
+BookingAccountNumberRead = Annotated[str | None, BeforeValidator(_booking_account_number_read)]
 
 
 # --- Shared building blocks ---

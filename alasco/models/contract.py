@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict
 
 from alasco.models.base import MonetaryAmount
+from alasco.models.write import BookingAccountNumberRead
 
 if TYPE_CHECKING:
     from alasco.client import AlascoClient
@@ -33,16 +34,8 @@ class ContractAttributes(BaseModel):
     date_contract: str | None = None
     date_created: str | None = None
     is_reverse_charge: bool = False
-    booking_account_number: str | None = None
+    booking_account_number: BookingAccountNumberRead = None
     cost_center: str | None = None
-
-    @field_validator("booking_account_number", mode="before")
-    @classmethod
-    def _booking_account_number_as_str(cls, value: Any) -> Any:
-        # Alasco is switching this field from integer to string; accept both.
-        if isinstance(value, int) and not isinstance(value, bool):
-            return str(value)
-        return value
 
 
 class Contract(BaseModel):

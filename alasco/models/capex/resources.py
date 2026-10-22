@@ -41,6 +41,7 @@ from alasco.models.capex.write import (
     UpdateContractRequest,
     relationship,
 )
+from alasco.models.write import BookingAccountNumberRead
 
 if TYPE_CHECKING:
     from decimal import Decimal
@@ -343,7 +344,7 @@ class ContractAttributes(BaseModel):
     date_contract: date | None = None
     date_created: datetime | None = None
     is_reverse_charge: bool = False
-    booking_account_number: int | None = None
+    booking_account_number: BookingAccountNumberRead = None
     cost_center: str | None = None
 
 
@@ -427,7 +428,7 @@ class Contract(_Resource):
         amount_net: Decimal | None = None,
         amount_tax: Decimal | None = None,
         currency: str = "EUR",
-        booking_account_number: int | None = None,
+        booking_account_number: str | int | None = None,
         contract_number: str | None = None,
         cost_center: str | None = None,
         date_contract: date | None = None,
@@ -479,7 +480,7 @@ class Contract(_Resource):
         amount_net: Decimal | None = None,
         amount_tax: Decimal | None = None,
         currency: str = "EUR",
-        booking_account_number: int | None = None,
+        booking_account_number: str | int | None = None,
         contract_number: str | None = None,
         cost_center: str | None = None,
         date_contract: date | None = None,

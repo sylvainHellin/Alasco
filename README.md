@@ -149,6 +149,13 @@ API money is sent and received as **strings**. Reads expose `net_float()` /
   `contractor` (not `contract_unit`).
 - Document upload is multipart, PDF only, type `CONTRACT` or `ATTACHMENT`.
 
+## Booking account number
+
+Alasco switched `booking_account_number` on contracts from integer to string in October 2026, so it may hold letters and special characters (`"A-1234"`).
+FinCon and CapEx reads accept an int or a string from the API and always yield a `str`, leading zeros kept.
+Writes accept an int or a string from the caller and always send a `str`, which the API accepted before the switch and requires after it; a blank value is omitted.
+Both vendored specs were patched by hand on 2026-10-22 to type the field as string, since the published specs predate the switch; replace them with fresh downloads when convenient.
+
 ## Tests
 
 ```bash

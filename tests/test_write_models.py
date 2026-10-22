@@ -169,11 +169,12 @@ def test_update_full_attributes_match_spec():
     assert errors == [], errors
 
 
-# booking_account_number: Alasco moves it from integer to string. Until the
-# switch, digits-only values without a leading zero go out as int, else as str.
+# booking_account_number: Alasco switched it from integer to string in October
+# 2026, so every value goes out as a str, numeric ones and leading zeros included.
 BOOKING_ACCOUNT_CASES = [
-    (12345, 12345),
-    ("12345", 12345),
+    (12345, "12345"),
+    ("12345", "12345"),
+    (" 12345 ", "12345"),
     ("0042", "0042"),
     ("A-1234", "A-1234"),
 ]
@@ -199,9 +200,7 @@ def test_create_booking_account_number_wire_format(given, wire):
     out = body["data"]["attributes"]["booking_account_number"]
     assert out == wire
     assert type(out) is type(wire)
-    if isinstance(wire, int):
-        # Integers still satisfy the current (integer-typed) openapi spec.
-        assert validate(body, get_schema("CreateContractRequestFincon")) == []
+    assert validate(body, get_schema("CreateContractRequestFincon")) == []
 
 
 @pytest.mark.parametrize(("given", "wire"), BOOKING_ACCOUNT_CASES)
@@ -210,8 +209,7 @@ def test_update_booking_account_number_wire_format(given, wire):
     out = body["data"]["attributes"]["booking_account_number"]
     assert out == wire
     assert type(out) is type(wire)
-    if isinstance(wire, int):
-        assert validate(body, get_schema("UpdateContractRequest")) == []
+    assert validate(body, get_schema("UpdateContractRequest")) == []
 
 
 def test_document_upload_type_enum():

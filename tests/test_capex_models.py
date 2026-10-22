@@ -391,6 +391,65 @@ def test_create_capex_contract_as_ordered_posts_then_patches(fake: FakeAlasco, c
     assert contract.status == "ORDERED"
 
 
+# booking_account_number: Alasco switched it from integer to string in October
+# 2026. Reads accept both and yield a str; writes always send a str.
+@pytest.mark.parametrize(
+    ("raw", "parsed"),
+    [(12345, "12345"), ("12345", "12345"), ("0042", "0042"), ("A-1234", "A-1234"), (None, None)],
+)
+def test_contract_read_booking_account_number(raw, parsed):
+    data = {**CONTRACT, "attributes": {**CONTRACT["attributes"], "booking_account_number": raw}}
+    assert Contract.model_validate(data).attributes.booking_account_number == parsed
+
+
+@pytest.mark.parametrize(
+    ("given", "wire"),
+    [(12345, "12345"), ("12345", "12345"), ("0042", "0042"), ("A-1234", "A-1234")],
+)
+def test_contract_create_and_update_send_booking_account_number_as_string(
+    fake: FakeAlasco, client: CapexClient, given, wire
+):
+    fake.add("POST", f"{BASE}/contracts/", {"data": CONTRACT})
+    fake.add("PATCH", f"{BASE}/contracts/{CONTRACT_ID}/", {"data": CONTRACT})
+
+    Contract.create(
+        client,
+        name="Bau AG lobby",
+        is_reverse_charge=False,
+        measure_id=MEASURE_ID,
+        contracting_entity_id=ENTITY_ID,
+        booking_account_number=given,
+    )
+    create_body = fake.last_json()
+    Contract.update(client, CONTRACT_ID, booking_account_number=given)
+    update_body = fake.last_json()
+
+    for body, schema in [
+        (create_body, "CreateContractRequestCapex"),
+        (update_body, "UpdateContractRequest"),
+    ]:
+        out = body["data"]["attributes"]["booking_account_number"]
+        assert out == wire
+        assert type(out) is str
+        assert _spec_errors(body, schema) == []
+
+
+@pytest.mark.parametrize("blank", [None, "", "   "])
+def test_contract_create_omits_blank_booking_account_number(
+    fake: FakeAlasco, client: CapexClient, blank
+):
+    fake.add("POST", f"{BASE}/contracts/", {"data": CONTRACT})
+    Contract.create(
+        client,
+        name="Bau AG lobby",
+        is_reverse_charge=False,
+        measure_id=MEASURE_ID,
+        contracting_entity_id=ENTITY_ID,
+        booking_account_number=blank,
+    )
+    assert "booking_account_number" not in fake.last_json()["data"]["attributes"]
+
+
 def test_add_paid_invoice_body(fake: FakeAlasco, client: CapexClient):
     created = {
         "id": INVOICE_ID,

@@ -26,7 +26,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from alasco.models.capex._common import ContractAmount, NetTaxAmount
-from alasco.models.write import RelationshipData, RelationshipRef
+from alasco.models.write import BookingAccountNumber, RelationshipData, RelationshipRef
 
 # --- Enums (verified against capex-openapi.json) ---
 
@@ -115,7 +115,7 @@ class CreateContractAttributes(BaseModel):
     name: str = Field(max_length=250)
     is_reverse_charge: bool
     amount: ContractAmount | None = None
-    booking_account_number: int | None = Field(default=None, ge=1, le=999999999)
+    booking_account_number: BookingAccountNumber = None
     contract_number: str | None = Field(default=None, max_length=250)
     cost_center: str | None = Field(default=None, max_length=100)
     date_contract: date | None = None
@@ -162,7 +162,7 @@ class UpdateContractAttributes(BaseModel):
     name: str | None = Field(default=None, max_length=250)
     status: ContractStatus | None = None
     amount: ContractAmount | None = None
-    booking_account_number: int | None = Field(default=None, ge=1, le=999999999)
+    booking_account_number: BookingAccountNumber = None
     contract_number: str | None = Field(default=None, max_length=250)
     cost_center: str | None = Field(default=None, max_length=100)
     date_contract: date | None = None

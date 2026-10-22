@@ -165,8 +165,8 @@ def test_document_upload_rejects_bad_type():
         )
 
 
-# booking_account_number reads: the API sends an int today and a string after
-# Alasco's switch; both must parse, and leading zeros in strings must survive.
+# booking_account_number reads: the API sent an int before Alasco's switch and a
+# string after it; both must parse, and leading zeros in strings must survive.
 @pytest.mark.parametrize(
     ("raw", "parsed"),
     [(12345, "12345"), ("12345", "12345"), ("0042", "0042"), ("A-1234", "A-1234"), (None, None)],
@@ -215,7 +215,7 @@ def test_contract_list_tolerates_mixed_booking_account_formats():
 
 @pytest.mark.parametrize(
     ("given", "wire"),
-    [(12345, 12345), ("12345", 12345), ("0042", "0042"), ("A-1234", "A-1234")],
+    [(12345, "12345"), ("12345", "12345"), ("0042", "0042"), ("A-1234", "A-1234")],
 )
 def test_contract_create_and_update_send_booking_account_number(given, wire):
     client = FakeClient()
