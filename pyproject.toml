@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "alasco"
-version = "0.2.0"
+version = "0.2.1"
 authors = [{ name = "Sylvain Hellin", email = "hellinsylvain@gmail.com" }]
 description = "Standalone httpx + pydantic-v2 SDK for the Alasco FinCon and CapEx APIs (read + write)."
 readme = "README.md"
